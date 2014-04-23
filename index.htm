@@ -1,0 +1,15 @@
+---
+layout: index
+title: eatype.com
+---
+
+<div class="posts">
+    {% for post in site.posts %}
+    <article class="article">
+        <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
+        <time>{{ post.date | date_to_string }}</time>
+        {{ post.content | split: '<!-- more -->' | first }}
+
+    </article>
+    {% endfor %}
+</div class="posts">

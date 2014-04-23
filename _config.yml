@@ -1,0 +1,4 @@
+encoding: UTF-8
+baseurl: /jekyll/_site
+title: Base Theme
+markdown: rdiscount

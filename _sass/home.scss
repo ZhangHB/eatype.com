@@ -1,0 +1,84 @@
+@charset "utf-8";
+#My-Jekyll-Theme { direction:ltr}
+// 导入
+// /Users/ZhangHB/Documents or D:/
+//------------------------------------------------------------------------------
+@import "/Users/ZhangHB/Documents/MySass/global-config";
+@import "config";
+@import "/Users/ZhangHB/Documents/MySass/base";
+@import "/Users/ZhangHB/Documents/MySass/mods/common";
+@import "/Users/ZhangHB/Documents/MySass/mods/grid";
+
+// @import "D:/MySass/global-config";
+// @import "config";
+// @import "D:/MySass/base";
+// @import "D:/MySass/mods/common";
+// @import "D:/MySass/mods/grid";
+
+
+
+
+
+// 通用部分
+//------------------------------------------------------------------------------
+html {
+    // background-color: #625F60;
+    background: #625F60 url(http://www.eatype.com/wp-content/themes/myStyle/img/bg.jpg) fixed no-repeat top center;
+}
+body {
+    background-color:transparent;
+}
+
+.phd {
+    text-indent:-9999px;
+    height:243px;
+    padding-bottom:7px;
+    background:url(http://www.eatype.com/wp-content/themes/myStyle/img/header.border.gif) repeat-x 0 100%
+}
+
+.content,
+.pft {
+    background-color:#fff;
+}
+
+.article {
+    font-family:$msyh,$sans-serif;
+    padding:20px;
+    background:url(http://www.eatype.com/wp-content/themes/myStyle/img/post.border.gif) repeat-x 0 100%;
+    h1 {
+        width:100%;
+        height:50px;
+        a {
+            float:left;
+            color:#fff;
+            background-color:$red;
+            padding-left:20px;
+            padding-right:20px;
+            margin-left:-40px;
+        }
+    }
+    h2 {
+        display:none;
+    }
+    hr {
+        display:block;
+        border:1px dotted #ccc;
+    }
+    time {
+        display:block;
+        font-size:10px;
+        color:#999;
+    }
+    ul,ol,p {
+        padding:10px 0;
+        color:#666;
+    }
+
+    ul {
+        @include ul-has-style;
+    }
+    ol {
+        @include ul-has-style(decimal);
+    }
+}
+

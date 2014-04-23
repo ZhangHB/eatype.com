@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href='/jekyll/_site/css/home.css' rel='stylesheet' type='text/css' />
+<link href="/jekyll/_site/assets/themes/prettify/prettify.css" rel="stylesheet" type="text/css" media="all">
+    <title>读书笔记 PPK谈JS</title>
+</head>
+<body>
+<header class="layout phd">
+    <h1>读书笔记 PPK谈JS</h1>
+</header>
+
+<div class="content layout">
+    <article class="article">
+        <h1>读书笔记 PPK谈JS</h1>
+
+<h2>手工分离Bug:</h2>
+
+<ol>
+<li>在函数的第一行插入 <code>return</code>, 这个函数就被关闭了. 如果此时 <code>Bug</code> 消失了, 就能肯定 <code>Bug</code> 出现在这个函数里. 如果 <code>Bug</code> 还在, 就恢复这个函数然后关闭下一个, 直到 <code>Bug</code> 消失;</li>
+<li>找到有 <code>Bug</code> 的函数后, 在第一段代码后边插入 <code>alert</code>. 再次测试后, 如果 <code>Bug</code> 出现了, 那问题就出现在 <code>alert</code> 之前的代码里, 如果 <code>Bug</code> 没有出现, 就把 <code>alert</code> 挪到下一个逻辑块之后, 直到 <code>Bug</code> 出现;</li>
+<li>找到出 <code>Bug</code> 的逻辑块之后, 继续用 <code>alert</code> 进行搜索, 直到找到出问题的那一行;</li>
+<li>在遍历结构中使用 <code>alert</code> 也许会产生一个问题, 如果遍历 100 次, 就会弹出 100 个 <code>alert</code>. 假如在第 22 个 <code>alert</code> 的时候发现了错误, 剩下的 <code>alert</code> 还是需要挨个点确定, 你可以用 <code>confirm</code> 代替 <code>alert</code> 来避免这个问题;</li>
+</ol>
+
+
+<p><a href="/jekyll/_site"></a></p>
+
+<p><a href="#more">阅读全文 →</a></p>
+
+<!-- more -->
+
+
+<h2>嵌入页面时可以这样...</h2>
+
+<p>在 <code>XHTML</code> 里使用包含代码的 <code>&lt;script&gt;</code> 标签时, 要把包含的内容包裹在 <code>CDATA(Character Data)</code> 定义字符里, 这样做的好处是, 浏览器的 <code>Html</code> 解释器就直接跳过这段代码,然后直接把这段代码交给 <code>JS</code> 引擎</p>
+
+<pre><code>&lt;script&gt;
+//&lt;![CDATA[
+　alert('Hello world!');
+//]]&gt;
+&lt;/script&gt;
+</code></pre>
+
+<h2>6种数据类型</h2>
+
+<p>4种主要类型</p>
+
+<ul>
+<li>数字(number)<br/>
+　数字就是数字,可以对数字进行加减乘除</li>
+<li>字符串(string)<br/>
+　必须在字符串两边加上单引号或者双引号</li>
+<li>布尔值(boolean)<br/>
+　就俩值true或者false</li>
+<li>对象(object)<br/>
+　除了以上三种类型之外的所有类型都是对象,对象可以被复制,传递,还可以通过引用来比较</li>
+</ul>
+
+
+<p>2种小数据类型</p>
+
+<ul>
+<li>undefined(未定义)</li>
+<li>null(空)</li>
+</ul>
+
+
+<p>typeof运算符可以显示某个值的类型:</p>
+
+<pre><code>var x = 'some text';
+alert(typeof x);
+</code></pre>
+
+<h2>数据类型的转换</h2>
+
+<p>数据类型转换是自动的, 当需要转换时就会发生. 比如某个数字和某个字符串进行数学运算时, 字符串就被自动转换成数字, 如果转换成功, 则得到正确的结果, 如果字符串无法转换成数字, 则结果为NaN(非数字).</p>
+
+<p>关于运算符+号有个小问题, +不仅是数字相加的运算符, +还可以用来拼接字符串. +作为拼接字符串的运算符优先级高于数字求和.所以一个数字和一个字符串(比如'4')用+来运算时,得到的结果是一个字符串.</p>
+
+<p>在一行代码里进行字符串拼接和求和时, JS从左到右遍历所有的+运算符, 从第一个+运算符开始, 判断+两侧的运算数, 如果都是数字,则进行求和, 如果有一侧是字符串,则进行字符串拼接. 在这个过程中, 可以用()来提升某一组运算的优先级.</p>
+
+<h2>转换成布尔型的规则</h2>
+
+<ul>
+<li>null和undefined转换成false;</li>
+<li>数字0和NaN转换成false;</li>
+<li>空字符串''转换成false;</li>
+<li>除此以外的所有值都转换成true;</li>
+</ul>
+
+
+<h2>常用的几种转换方法</h2>
+
+<ul>
+<li>转换成数字:*1或者-0;</li>
+<li>转换成字符串: +'' 和一个空字符串拼接;</li>
+<li>转换成布尔值: 在要转换的值前边使用两次非(!)运算符;</li>
+</ul>
+
+
+<h2>运算符</h2>
+
+<ul>
+<li>加减乘除就不用说了, %是取模运算, 也就是求余数;</li>
+<li>所有的运算符都有简写方式, 比如'+=','-=','*=';</li>
+<li>取反运算符, 就是取负值, 比如'-3';</li>
+<li>++和--是递加1或者递减1;
+　=是赋值运算符,==是相等运算符,用来判断==两侧的运算数是否相等,===是等同运算符,不仅判断值是否相等,还判段类型是否一样;
+　!=是不等运算符,!==是严格的不等运算符(就类似===一样,也判断类型是否一样);
+　&lt;,>,&lt;=,>=这四个就是通常意义上的小于,大于,小于等于和大于等于. 两个字符串在进行这四种运算时, 首先被转换成数字类型,然后再进行比较. 如果不能转换成数字类型, 则直接按照字母排序来进行比较. 大写字母总是小于小写字母;
+　?:是三元运算符,也叫条件运算符.这种运算符是一种简写方式. 当'?'前边的条件为true是, ':'前边的值被赋给变量, 否则就把':'后边的值赋给变量. 比如 var a = (b==0) ? 0 : 1, 如果b==0为真, 则a=0, 否则a=1;</li>
+</ul>
+
+
+<p>变量
+变量名必须由字母，数字，下划线，和$组成。首字符不能是数字。变量名大小写敏感。
+用var声明变量，可以只声明不赋值，未赋值的变量值为undefined。
+var不是必须的，不用var声明的变量是隐性变量，并且是全局变量。
+尽量使用var来声明变量，避免出现作用域的问题。
+无论是否使用var关键字，只要是在所有函数体外声明的变量，都是全局变量。</p>
+
+<p>在函数体内用var关键字声明的变量是局部变量，函数的参数也是局部变量。</p>
+
+<p>数字
+整数和浮点数没有区别，可以直接计算。但小数计算有可能出现“舍入误差”，要注意对计算结果进行四舍五入。
+另外要注意数值型变量的值前边的0。</p>
+
+<p>Math对象
+三个取整的方法
+Math.round()
+Math.floor(
+Math.ceil</p>
+
+    </article>
+</div>
+<footer class="layout pft">
+    © 2014 eatype.com. Powered by <a href="http://jekyllrb.com/">Jekyll</a>.
+</footer>
+
+
+<script type="text/javascript" src="/jekyll/_site/assets/themes/prettify/prettify.js"></script>
+<script type="text/javascript" src="http://www.xinhuanet.com/static/jq.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $('pre').addClass('prettyprint linenums').attr('style', 'overflow:auto');
+        prettyPrint();
+    });
+</script>
+</body>
+</html>
