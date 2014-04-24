@@ -1,3 +1,4 @@
 encoding: UTF-8
+baseurl: http://eatype.com/
 title: eatype.com
 markdown: rdiscount
