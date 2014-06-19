@@ -12,10 +12,7 @@ title: 读书笔记 PPK谈JS
 3. 找到出 `Bug` 的逻辑块之后, 继续用 `alert` 进行搜索, 直到找到出问题的那一行;
 4. 在遍历结构中使用 `alert` 也许会产生一个问题, 如果遍历 100 次, 就会弹出 100 个 `alert`. 假如在第 22 个 `alert` 的时候发现了错误, 剩下的 `alert` 还是需要挨个点确定, 你可以用 `confirm` 代替 `alert` 来避免这个问题;
 
-
-<a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
-
-<a href="{{ site.baseurl }}{{ post.url }}#more">阅读全文 →</a>
+<a href="#more">阅读全文</a>
 <!-- more -->
 
 ## 嵌入页面时可以这样...

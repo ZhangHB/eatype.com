@@ -9,6 +9,7 @@ title: eatype.com
         <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
         <time>{{ post.date | date_to_string }}</time>
         {{ post.content | split: '<!-- more -->' | first }}
+        <a href="{{ site.baseurl }}{{ post.url }}#more">阅读全文 →</a>
 
     </article>
     {% endfor %}
