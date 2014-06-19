@@ -15,7 +15,7 @@ title: 读书笔记 PPK谈JS
 
 <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
 
-<a href="#more">阅读全文 →</a>
+<a href="{{ site.baseurl }}{{ post.url }}#more">阅读全文 →</a>
 <!-- more -->
 
 ## 嵌入页面时可以这样...
