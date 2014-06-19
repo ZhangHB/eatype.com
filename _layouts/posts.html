@@ -5,12 +5,13 @@
     {% include head.html %}
     <title>{{ page.title }}</title>
 </head>
-<body>
+<body class="posts-page">
 <header class="layout phd">
     <h1>{{ page.title }}</h1>
 </header>
 
 <div class="content layout">
+    <h1>{{ page.title }}</h1>
     <article class="article">
         {{ content }}
     </article>
@@ -18,13 +19,9 @@
 {% include footer.html %}
 
 
-<script type="text/javascript" src="{{ site.baseurl }}/assets/themes/prettify/prettify.js"></script>
-<script type="text/javascript" src="http://www.xinhuanet.com/static/jq.js"></script>
+<script src="{{ site.baseurl }}/assets/js/highlight.min.js"></script>
 <script type="text/javascript">
-    $(function() {
-        $('pre').addClass('prettyprint linenums').attr('style', 'overflow:auto');
-        prettyPrint();
-    });
+    hljs.initHighlightingOnLoad();
 </script>
 </body>
 </html>
