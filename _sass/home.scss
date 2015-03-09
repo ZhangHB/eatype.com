@@ -3,17 +3,17 @@
 // 导入
 // /Users/ZhangHB/Documents or D:/
 //------------------------------------------------------------------------------
-@import "/Users/ZhangHB/Documents/MySass/global-config";
-@import "config";
-@import "/Users/ZhangHB/Documents/MySass/base";
-@import "/Users/ZhangHB/Documents/MySass/mods/common";
-@import "/Users/ZhangHB/Documents/MySass/mods/grid";
-
-// @import "D:/MySass/global-config";
+// @import "/Users/ZhangHB/Documents/MySass/global-config";
 // @import "config";
-// @import "D:/MySass/base";
-// @import "D:/MySass/mods/common";
-// @import "D:/MySass/mods/grid";
+// @import "/Users/ZhangHB/Documents/MySass/base";
+// @import "/Users/ZhangHB/Documents/MySass/mods/common";
+// @import "/Users/ZhangHB/Documents/MySass/mods/grid";
+
+@import "D:/MySass2/global-config";
+@import "config";
+@import "D:/MySass2/base";
+@import "D:/MySass2/mods/layout";
+@import "D:/MySass2/mods/grid";
 
 
 
@@ -22,9 +22,10 @@
 // 通用部分
 //------------------------------------------------------------------------------
 html {
-    // background-color: #625F60;
-    background: #625F60 url(http://www.eatype.com/wp-content/themes/myStyle/img/bg.jpg) fixed no-repeat top center;
+    background: #625f60 url(http://eatype.qiniudn.com/imgbg.jpg) fixed no-repeat top center;
 }
+
+
 body {
     background-color:transparent;
 }
@@ -33,7 +34,7 @@ body {
     text-indent:-9999px;
     height:243px;
     padding-bottom:7px;
-    background:url(http://www.eatype.com/wp-content/themes/myStyle/img/header.border.gif) repeat-x 0 100%
+    background: url(http://eatype.qiniudn.com/imgborder.png) repeat-x 0 243px;
 }
 
 .content,
@@ -44,7 +45,8 @@ body {
 .article {
     font-family:$msyh,$sans-serif;
     padding:20px;
-    background:url(http://www.eatype.com/wp-content/themes/myStyle/img/post.border.gif) repeat-x 0 100%;
+    background: url(http://eatype.qiniudn.com/imgborder.png) repeat-x 0 100%;
+
     h1 {
         width:100%;
         height:50px;
@@ -80,5 +82,32 @@ body {
     ol {
         @include ul-has-style(decimal);
     }
+
+    pre {
+        background-color: #222;
+        font-size: 12px;
+        margin: 0 -20px;
+    }
 }
 
+.pft {
+    padding:20px 0;
+    font-size:10px;
+    text-align: center;
+}
+
+
+
+
+// Posts
+//------------------------------------------------------------------------------
+.posts-page {
+    h1 {
+        color:#c30;
+        padding:30px 0 0;
+        text-align:center;
+        font-size:36px;
+        line-height:38px;
+        font-family:$msyh,$sans-serif;
+    }
+}

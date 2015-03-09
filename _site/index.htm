@@ -2,11 +2,12 @@
 <html>
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <link href='/jekyll/_site/css/home.css' rel='stylesheet' type='text/css' />
-<link href="/jekyll/_site/assets/themes/prettify/prettify.css" rel="stylesheet" type="text/css" media="all">
+    <link href='//eatype.com/css/home.css' rel='stylesheet' />
+<link href="//eatype.com/assets/css/codepen-embed.css" rel="stylesheet">
+
     <title>eatype.com</title>
 </head>
-<body>
+<body class="index-page">
 <header class="layout phd">
     <h1>eatype.com</h1>
 </header>
@@ -15,19 +16,424 @@
     <div class="posts">
     
     <article class="article">
-        <h1><a href="/jekyll/_site/2014/05/22/ProJS.html">Pro JavaSctipt!</a></h1>
-        <time>22 May 2014</time>
-        <h2>Pro JavaSctipt!</h2>
+        <h1><a href="http://eatype.com/2014/06/19/Learn-nanobar_js.html">尝试着理解 Nanobar.js</a></h1>
+        <time>19 Jun 2014</time>
+        <h2>尝试着理解 Nanobar.js</h2>
 
-<p>22 May 2014</p>
+<p><a href="https://github.com/jacoborus/nanobar/">Nanobar.js</a> 是个原生 js 写成的小插件。用来在页面顶端创建一个进度条，显示页面加载的状态。当然，这个脚本只负责前端显示部分，至于在页面加载的过程中，什么时候显示百分之多少，就不是这个脚本该负责的了。</p>
 
-<p>Pro Javascript OCR</p>
+<p>因为是原生 js 写成的，理解它的运行机制，应该能让我这样的菜鸟学到不少新东西。所以我尝试着给这个脚本添加注释，权当是阅读笔记了。</p>
+
+<pre><code>/* http://nanobar.micronube.com/  ||
+   https://github.com/jacoborus/nanobar/
+   MIT LICENSE */
+
+var Nanobar = (function(){
+    'use strict';
+
+    // 定义变量
+    // 两个主要对象
+    /*  Bar：
+            - 构造器函数
+            - 这个对象存储了用来展示宽度的 bar 元素 el
+            - 和目标宽度的值 here
+            - 还有用来标识动画状态的 moving
+
+        Nanobar：
+            - 构造器函数
+            - 这个对象存储了用来在 DOM 里定位的元素，
+              Bar 的 el 会被绑定到这个元素上
+            - 还有用来调用 Bar.go() 的 go() 方法
+
+        init：
+            - 这个函数衔接了 Nanobar 和 Bar 这两个对象
+
+        move()：
+            - 用来递归修改宽度，产生动画，判断状态，
+              并清理无用的 DOM 元素的方法
+
+    */
+
+    var addCss, Bar, Nanobar, move, place, init,
+
+        // 容器的样式
+        cssCont = {
+            width: '100%',
+            height: '4px',
+            zIndex: 9999,
+            top : '0'
+        },
+
+        // 进度条的样式
+        cssBar = {
+            width:0,
+            height: '100%',
+            clear: 'both',
+            transition: 'height .3s'
+        };
+
+
+
+
+
+    // add `css` to `el` element
+    // 被调用时，接收俩参数，
+    // 第一个参数是添加样式的元素，第二个参数应该是对象
+    // 遍历第二个参数的所有属性，
+    // 当成css绑定到第一个参数传进来的元素上
+    addCss = function (el, css ) {
+        var i;
+        for (i in css) {
+            el.style[i] = css[i];
+        }
+        el.style.float = 'left';
+    };
+
+
+
+
+
+    // animation loop
+    // 动画
+    // 这个函数在 Bar.prototype.go 里被调用执行
+    // 并且会自行进行递归以产生动画
+    move = function () {
+
+        // 话说，这里的 this 应该是指调用这个函数的上下文环境
+        // 看来看去，也就是在下边的 Bar.prototype.go 里调用了
+
+
+        // 这个 this 指的是 Bar 对象
+        // 这个 Bar 对象，保存了各种必要的属性
+        // 比如：
+        // 实时计算出来的宽度；
+        // 目标宽度
+        // 要处理的 bar 元素
+        // bar 元素的颜色
+        // 还有将会调用本函数的 go 方法
+        var self = this,
+            // 这里把 this 赋值给 self，
+            // 是为了在下边的 setTimeout 里，
+            // 通过 self 变量访问 this
+
+            // 计算要运动的距离
+            // this.here 是目标宽度，也就是将要变成的宽度
+            // this.width 是目前的宽度
+            // 这俩值都是百分比宽度，
+            // 并且会在 place 方法里指定到 bar 上
+            dist = this.width - this.here;
+
+        // （#1）如果目标宽度和当前宽度的差不到百分之 0.01
+        if (dist &lt; 0.1 &amp;&amp; dist &gt; -0.1) {
+
+            // call 是函数的全局方法，
+            // 作用是在使用一个指定的 this 值和若干个指定的
+            // 参数值的前提下调用某个函数或方法.
+            // place 是自定义方法，用来直接修改 bar 的宽度
+            // 这里是因为，目标宽度和当前宽度的差不到百分之
+            // 0.01，说明已经无限接近目标宽度了，
+            // 干脆直接把目标宽度赋值给 bar
+            place.call( this, this.here );
+
+            // 修改标识，标示一下，动画已经停止了
+            this.moving = false;
+
+            // 如果 Bar 的 width 属性变成 100 了，
+            // 也就是说，宽度到头儿了
+            if (this.width == 100) {
+
+                // 就把 用来显示宽度的 div 元素的高度清零
+                this.el.style.height = 0;
+
+                // 下边这些代码确保了，
+                // 在 bar 宽度到达 100% 之后的 0.3 秒时，
+                // 把刚才处理的 bar 元素干掉，
+                // 保证当前页面不会出现太对的 DOM 节点
+                setTimeout( function () {
+                    self.cont.el.removeChild( self.el );
+                }, 300);
+            }
+        } else {
+            // 如果（#1）的判断不成立，
+            // 说明当前的宽度还没到达目标宽度
+            // 那就继续每隔16毫秒，计算并设置一次 Bar 的宽度，形成动画
+            // 计算的方式是每隔16毫秒计算一下当前宽度和目标宽度的距离差的4分之一
+            // 赋值给 Bar 的 width 属性
+            place.call( this, this.width - (dist/4) );
+
+            setTimeout( function () {
+                // 这里的 this 指向了 window 对象，所以在函数开始的地方，把正确的 this 赋值给了 self 变量
+                // 然后递归调用 this 也就是 Bar 对象的 go 方法
+                self.go();
+            }, 16);
+        }
+    };
+
+
+
+
+
+    // set bar width
+    // 设置 bar 的宽
+    place = function (num) {
+
+        // 这个 this.width 只是修改 Bar 对象的 width 属性，这个属性是用来判断状态的
+        // 不是用来修改 显示宽度动画的元素
+        this.width = num;
+
+        // 这里才是修改显示宽度动画的实际元素的宽度
+        this.el.style.width = this.width + '%';
+    };
+
+
+
+
+
+    // create and insert bar in DOM and this.bars array
+    // 创建并把 bar 插到 DOM 里，同时插入到 Nanobar.bars 属性头部，这个属性是个数组
+    // 这个函数在 Nanobar 被实例化时调用，所以这里的 this 指的是 Nanobar 对象
+    init = function () {
+
+        // 创建了一个 Bar 的实例
+        // init 这个方法在 Nanobar 里被调用，所以把 this 作为参数传递给了 Bar()，
+        // Bar() 里边的 cont 就被直接指向了 Nanobar 构造器所创建出来的那个实例
+        var bar = new Bar( this );
+
+        // 这句也应该能说明，this 是指向 Nanobar 的，
+        this.bars.unshift( bar );
+
+        // 比如可以这样显示 Nanobar 的各种属性和方法
+        console.log(this.el);
+        // console.log(this.go);
+        // console.log(this.opts);
+        // console.log(this.bars);
+    };
+
+
+
+
+    // 在 init() 里被声明成一个实例
+    Bar = function ( cont ) {
+
+        // create progress element
+        // 创建 进度条 元素
+
+        // 创建一个空 div
+        this.el = document.createElement( 'div' );
+
+        // 把默认的背景色设置到这个 div 上
+        this.el.style.backgroundColor = cont.opts.bg;
+
+        // 为了更好的理解代码，我在这里给刚才创建的空 div 添加了一个 class
+        // 结果显示，这个空 div 是内部的那个用来显示宽度的 div
+        this.el.className = "this-el";
+
+        // 把 Bar 对象的 width 属性 清零
+        this.width = 0;
+
+        // 把 Bar 对象的目标宽度清零
+        this.here = 0;
+
+        // 把用来标示是否在进行动画的标志设成false，表示未在进行动画
+        this.moving = false;
+
+        // 把 Bar 的 cont 属性设置为参数传进来的对象
+        this.cont = cont;
+
+        // 给刚才创建的空 div 设置样式
+        addCss( this.el, cssBar);
+
+        // 为了更好的理解代码，我在这里给所谓的 cont.el 添加了一个 class
+        // 结果显示，这个 cont.el 是外部的容器 div
+        cont.el.className = "cont-el";
+
+        // 把 this.el 绑定到 cont.el 上
+        // cont.el 是在
+        cont.el.appendChild( this.el );
+    };
+
+
+
+
+    // 这个方法被 Nanobar.go 调用
+    // 传进来的参数，决定了 bar 的目标宽度
+    Bar.prototype.go = function (num) {
+
+        // 判断一下是否传进来了参数，如果有
+        if (num) {
+
+            // 把传进来的参数，赋值给目标宽度
+            this.here = num;
+
+            // 看一眼 动画标识，是否是动画中，如果不是
+            if (!this.moving) {
+
+                // 标识为 动画中，标识 bar 正在不停地改变宽度
+                this.moving = true;
+
+                // 调用运动函数，真正改变 bar 的宽度
+                move.call( this );
+            }
+
+            // 如果动画标识已经是 动画中 了，
+        } else if (this.moving) {
+
+            // 调用运动函数，真正改变 bar 的宽度
+            move.call( this );
+        }
+    };
+
+
+
+
+    // 这个构造器在被实例化的时候，创建了相应的dom元素，并设置了相应的样式且被放在了dom的正确位置上，
+    // 然后调用了 init 函数
+    Nanobar = function (opt) {
+
+        var opts = this.opts = opt || {},
+            el;
+
+        // set options
+        opts.bg = opts.bg || '#000';
+        this.bars = [];
+
+
+        // create bar container
+        // 创建 bar 的容器
+        el = this.el = document.createElement( 'div' );
+
+        // 给刚才创建出来的 el 增加一个自定义属性，以利于在分析这些代码的时候，在 DOM 里查看到它
+        // 不过话说，不加这个也能明白，就是外部的 div
+        el.setAttribute("myAttrib", "Nanobar-el");
+
+        // append style
+        // 添加样式，并按照参数设定 id
+        addCss( this.el, cssCont);
+        if (opts.id) {
+            el.id = opts.id;
+        }
+        // set CSS position
+        // 设置定位方法，如果设置了参数 target，说明需要把 bar 的外部容器放在 target 元素里
+        // 如果没设置参数 target，就说明将会把 bar 放在 body 里，
+        // 相应的，给两种不同的方式，添加不同的样式
+        el.style.position = !opts.target ? 'fixed' : 'relative';
+
+        // insert container
+        // 插入到相应的 DOM 里
+        if (!opts.target) {
+            document.getElementsByTagName( 'body' )[0].appendChild( el );
+        } else {
+            opts.target.insertBefore( el, opts.target.firstChild);
+        }
+
+
+        // 当 Nanobar 被实例化的时候，init 函数就被执行了
+        // 这里调用 init 是为了把 Nanobar 作为参数，传递到 Bar() 里
+        init.call( this );
+    };
+
+
+
+
+
+    Nanobar.prototype.go = function (p) {
+        // expand bar
+        // 调用 Bar.go 这个方法，改变 bar 宽度
+        this.bars[0].go( p );
+
+        // 这行是我添加的，就是想把，每次调用 init 方法时，unshift 到 bars 数组，
+        // 并且每次当目标宽度为 100% 时调用 init 方法的实际情况变成可视化的
+        // console.log(this.bars.length);
+
+        // create new bar at progress end
+        // 当 bar 的宽度到达 100% 之后，调用一下 init 方法，重新创建一个 bar 元素
+        if (p == 100) {
+            init.call( this );
+        }
+    };
+
+    return Nanobar;
+})();
+</code></pre>
+
+<hr />
+
+<h3>尝试描述一下程序的流程</h3>
+
+<ol>
+<li>这个脚本里处理的 DOM 对象都是在脚本里创建的；</li>
+<li>在 html 页面，执行 var nanobar = new Nanobar() 时，就创建了一个 Nanobar 的实例；</li>
+<li>创建这个实例的同时，Nanobar 函数就被运行了，相应的属性和元素就被创建出来，并被设置了相应的样式且被放到了 DOM 里相应的位置上，之后 init 函数被调用；</li>
+<li>init 被调用的时候，把它所在的上下文环境传递给了 Bar 构造器，并创建了一个 Bar 的实例，随后这个实例被 unshift 到 Nanobar 的 bars 属性里；</li>
+<li>实例化 Bar 的过程中，创建了内部的 div，并绑定到 外部 div 里；</li>
+<li>在 html 页面，执行 nanobar.go(50) 的时候，会调用 Bar 实例的 go 方法，并且调用的是 bars 属性里的第一个 Bar 实例；</li>
+<li>也就是说 nanobar(50) 等于 Bar.go(50);</li>
+<li>Bar.go() 方法会调用 move() 函数，判断并动态改变内部 div 的宽度，形成动画；</li>
+<li>move() 函数调用 place() 函数，进行具体的 DOM 操作</li>
+</ol>
+
 
 
     </article>
     
     <article class="article">
-        <h1><a href="/jekyll/_site/2010/10/16/Create-a-Pie-Chart-with-Illustrator.html">用Illustrator画饼图</a></h1>
+        <h1><a href="http://eatype.com/2014/04/28/Build-front-end-development-environment.html">在 Windows 上搭建前端开发环境</a></h1>
+        <time>28 Apr 2014</time>
+        <h2>在 Windows 上搭建前端开发环境</h2>
+
+<p>需要的工具:</p>
+
+<ul>
+<li>服务器环境(WAMP)</li>
+<li>编辑器</li>
+<li>编译工具</li>
+<li>版本管理</li>
+<li>其他</li>
+</ul>
+
+
+<h3>服务器环境</h3>
+
+<ul>
+<li>Windows : Xampp</li>
+<li>OSX : MAMP / Xampp</li>
+</ul>
+
+
+<h3>编辑器</h3>
+
+<ul>
+<li>Sublime Text 2 / 3</li>
+<li>Adobe Brackets</li>
+<li>Aptana</li>
+</ul>
+
+
+
+    </article>
+    
+    <article class="article">
+        <h1><a href="http://eatype.com/2014/04/24/About-Zeal.html">Zeal</a></h1>
+        <time>24 Apr 2014</time>
+        <h2>Zeal</h2>
+
+<p><a href="http://zealdocs.org/">Zeal</a>, Windows 上的 <a href="http://kapeli.com/dash">Dash</a>, 完全兼容 Dash 的 <a href="http://kapeli.com/docset_links">Docsets</a>, 所以比 TakeOff 的内容更为完善. 而且创建自己的 Docsets 也是没问题的.</p>
+
+
+    </article>
+    
+    <article class="article">
+        <h1><a href="http://eatype.com/2014/04/22/Pro-Javascript-OCR.html">Pro JavaSctipt!</a></h1>
+        <time>22 Apr 2014</time>
+        <h2>Pro JavaSctipt!</h2>
+
+<p>Pro Javascript 这本书已经绝版了，貌似现在只能选择淘宝上的影印版，和 Chinapub 上的高价版。更别提能买到电子版的了，那就 OCR 之后自个儿做一本儿电子的吧。</p>
+
+
+    </article>
+    
+    <article class="article">
+        <h1><a href="http://eatype.com/2010/10/16/Create-a-Pie-Chart-with-Illustrator.html">用Illustrator画饼图</a></h1>
         <time>16 Oct 2010</time>
         <h2>用Illustrator画饼图</h2>
 
@@ -37,7 +443,7 @@
     </article>
     
     <article class="article">
-        <h1><a href="/jekyll/_site/2010/05/09/PPK-Talk-JS-Note.html">读书笔记 PPK谈JS</a></h1>
+        <h1><a href="http://eatype.com/2010/05/09/PPK-Talk-JS-Note.html">读书笔记 PPK谈JS</a></h1>
         <time>09 May 2010</time>
         <h1>读书笔记 PPK谈JS</h1>
 
@@ -51,16 +457,14 @@
 </ol>
 
 
-<p><a href="/jekyll/_site"></a></p>
-
-<p><a href="#more">阅读全文 →</a></p>
+<p><a href="/2010/05/09/PPK-Talk-JS-Note.html#more">更多</a></p>
 
 
 
     </article>
     
     <article class="article">
-        <h1><a href="/jekyll/_site/2010/04/21/Windows7-and-PhotoshopCS.html">在Win7里继续使用PSCS</a></h1>
+        <h1><a href="http://eatype.com/2010/04/21/Windows7-and-PhotoshopCS.html">在Win7里继续使用PSCS</a></h1>
         <time>21 Apr 2010</time>
         <h2>在Win7里继续使用PSCS</h2>
 
@@ -72,7 +476,7 @@
 
 <p>关掉桌面组合后, Win7的透明效果没了, 变成了很难看的蓝色, 最主要的是这蓝色还没有地方可调整.</p>
 
-<p>再继续想辄, 默认主题不好看, 那就用第三方主题1呗, 下载这个2, 先把系统文件替换掉! 以前XP时代替换一个文件就行, 现在在Win7里要替换三个. 重启系统就能用第三方主题了.</p>
+<p>再继续想辄, 默认主题不好看, 那就用第三方主题<sup>1</sup>呗, 下载<a href="http://pan.baidu.com/s/1pJ18vyz">这个</a><sup>2</sup>, 先把系统文件替换掉! 以前XP时代替换一个文件就行, 现在在Win7里要替换三个. 重启系统就能用第三方主题了.</p>
 
 <p>重启了之后又出现了新问题, Live Mesh又开始没事儿找事儿了(在替换了系统文件的XP里也有同样的毛病, 具体说就是在某些时候桌面上的窗口儿会自个儿慢慢儿地缩小, 对, 没错儿, 就是在那儿自己慢慢儿~慢慢儿的缩小, 直到缩成一个Titlebar), 唉, 再退一步吧, 反正还有Dropbox, 把Live Mesh卸载掉.</p>
 
@@ -90,7 +494,71 @@
     </article>
     
     <article class="article">
-        <h1><a href="/jekyll/_site/2010/01/01/hello-world.html">Hello, World!</a></h1>
+        <h1><a href="http://eatype.com/2010/03/16/The-Non-designer%27s-Design-Book-note.html">读书笔记 写给大家看的设计书</a></h1>
+        <time>16 Mar 2010</time>
+        <h2>读书笔记 写给大家看的设计书</h2>
+
+<p>首先是4大设计基本原则:</p>
+
+<ul>
+<li>对比 (Contrast)</li>
+<li>重复 (Repetition)</li>
+<li>对齐 (Alignment)</li>
+<li>亲密性 (Proximity)</li>
+</ul>
+
+
+<p>平时最好能多关注一下, 看看曾经关注过的那些优质的设计, 都在什么地方体现了这4个原则.</p>
+
+<ul>
+<li>亲密性</li>
+</ul>
+
+
+<p>先说"亲密性", 亲密性原则是指, 把相关的项组织在一起, 尝试移动这些项, 使它们在物理位置上靠得更近, 相关的项将被看作是凝聚为一体的一个视觉单元. 所以说, 亲密性的根本目的是为了实现"组织性".</p>
+
+<p>物理位置的接近就意味着存在亲密性, 亲密性意味着关联. 所以彼此没有关联的信息项, 就不应该存在很近的亲密性.</p>
+
+<p>"如果某些元素在理解上存在关联, 或者相互之间存在某种关系, 那么这些元素在视觉上也应该有关联. 除此以外, 其他孤立元素或元素组则不应该存在亲密性."</p>
+
+<p>首先要理解信息的内容, 然后对信息进行分组. 避免在一个页面里有太多的孤立元素.</p>
+
+<ul>
+<li>对齐</li>
+</ul>
+
+
+<p>接下来是"对齐", 对齐原则是指, 任何元素都不能在页面上任意安放, 每一项都应该与页面上的某个内容存在某种视觉联系. 对齐的根本目的是, 是页面统一而有条理. 要达到这个目的(在页面里强调统一性), 就需要在各个单独的视觉元素之间存在某种视觉纽带, 通过合适的摆放, 可以让它们看上去是有联系而相关的.</p>
+
+<p>左对齐和右对齐都会有一条"对齐线", 这条显示了边界的对齐线为布局提供了力度.</p>
+
+<p>居中对齐会创建一种更正式, 更稳重的外观, 但同时更为中规中矩, 也更为乏味. 所以任何时候都不应该优先考虑居中对齐. 另外也要避免同时混合使用多种对齐方式, 比如,要左对齐尽量都左对齐.</p>
+
+<ul>
+<li>重复</li>
+</ul>
+
+
+<p>重复原则, 设计的某些方面需要在整个作品中重复. 比如, 在一个页面中, 全部的H2都设定成相同的Font size, 相同的颜色, 相同的Ling height, 并拥有同样的项目符号. 重复性也可以看作是"一致性".</p>
+
+<p>不要把重复用的太滥, 应该尽量"保持重复的多样性".</p>
+
+<ul>
+<li>对比</li>
+</ul>
+
+
+<p>对比可以有效的增加视觉效果; 对比可以在不同元素之间建立一种有组织的层次结构, 对比必须强烈, 只有对比的双方截然不同才能形成对比, 否则只能成为冲突;</p>
+
+<p>对比首先是为了增加视觉效果, 因为"如果一个页面看起来很有意思, 往往也更有可读性.", 其次对比有助于信息的组织.</p>
+
+<p>实现对比的方法有很多, 不管是不同的字体, 线宽, 颜色, 形状, 大小, 空间, 或是什么其他的 avenues, 记住一定要"强烈".</p>
+
+
+    </article>
+    
+    <article class="article">
+        <h1><a href="http://eatype.com/2010/01/01/hello-world.html">Hello, World!</a></h1>
         <time>01 Jan 2010</time>
         <h2>Hello, World!</h2>
 
@@ -106,17 +574,13 @@
 </div class="posts">
 </div>
 <footer class="layout pft">
-    © 2014 eatype.com. Powered by <a href="http://jekyllrb.com/">Jekyll</a>.
+    &copy; 2014 eatype.com. Powered by <a href="http://jekyllrb.com/">Jekyll</a>.
 </footer>
 
 
-<script type="text/javascript" src="/jekyll/_site/assets/themes/prettify/prettify.js"></script>
-<script type="text/javascript" src="http://www.xinhuanet.com/static/jq.js"></script>
+<script src="http://eatype.com/assets/js/highlight.min.js"></script>
 <script type="text/javascript">
-    $(function() {
-        $('pre').addClass('prettyprint linenums').attr('style', 'overflow:auto');
-        prettyPrint();
-    });
+    hljs.initHighlightingOnLoad();
 </script>
 </body>
 </html>
